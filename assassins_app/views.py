@@ -14,29 +14,40 @@ def handleSms(request):
   if(request.method != 'POST'):
     return HttpResponseNotAllowed
 
+  s = Session(request.body)
+  user = s.fromaddress['id']
+  game_number = s.to['id']
+  # user = '12488253011'
+  # game_number = '16178703381'
+
   # grab and validate message
   msg = request.POST['msg']
   msg = msg.strip()
   if(re.match('[\r\n]', msg)):
     return _sendError('invalid characters.')
-  user = request.POST['user']
+  # user = request.POST['user']
   user = user.strip()
   if((not user) or user == ''):
     return _sendError('invalid phone number.')
   elif(not re.match('^[0-9+]+$', user)):
     return _sendError('invalid characters in phone number.')
-  
+
+  # get the game associated with this message
+  try:
+    game = Game.objects.get(number = game_number)
+  except Game.DoesNotExist:
+    return _sendError('game does not exist!')
 
   # try to parse command
   msg_parsed = msg.split(None)
-  if(len(msg_parsed) < 1 or len(msg_parsed) > 4):
+  if(len(msg_parsed) < 1 or len(msg_parsed) > 3):
     return _sendError('that\'s not a valid command.')
 
   msg_parsed[0] = msg_parsed[0].lower()
   if(msg_parsed[0] == "echo"):
     return _handleEcho(msg_parsed, user)
   elif(msg_parsed[0] == "join"):
-    return _handleJoin(msg_parsed, user)
+    return _handleJoin(msg_parsed, user, game)
   elif(msg_parsed[0] == "kill"):
     return _handleKill(msg_parsed, user)
   elif(msg_parsed[0] == "dead"):
@@ -58,19 +69,15 @@ def _handleEcho(msg_parsed, user):
   return _sendResponse(str(user) + ' said: ' + msg_parsed[1])
 
 
-def _handleJoin(msg_parsed, user):
-  """expect msg: join <game_name> <ldap> <alias>"""
-  if(len(msg_parsed) != 4):
+def _handleJoin(msg_parsed, user, game):
+  """expect msg: join <ldap> <alias>"""
+  if(len(msg_parsed) != 3):
     return _sendError('incorrect number of arguments.')
-  game_name = msg_parsed[1]
-  ldap = msg_parsed[2]
-  alias = msg_parsed[3]
+  ldap = msg_parsed[1]
+  alias = msg_parsed[2]
 
-  # Retrieve game object.
-  try:
-    game = Game.objects.get(name = game_name)
-  except DoesNotExist:
-    return _sendError('game ' + game_name + ' does not exist!')
+  if(game.registration_open is not True):
+    return _sendError('registration for ' + game.name + ' is closed.')
 
   # Add a player to the game.
   try:
@@ -79,21 +86,21 @@ def _handleJoin(msg_parsed, user):
       alias = alias,
       ldap = ldap)
     output = 'You are registered as alias ' + player.alias + ' with ldap ' +\
-        player.ldap + '.'
+        player.ldap + ' for ' + game.name + '.'
     return _sendResponse(output)
   except IntegrityError:
     try:
-      Player.objects.get(phone_number = user)
+      Player.objects.get(game = game, phone_number = user)
       _sendError('this phone is already registered for this game.')
     except Player.DoesNotExist:
       pass
     try:
-      Player.objects.get(alias = alias)
+      Player.objects.get(game = game, alias = alias)
       return _sendError('the alias ' + alias + ' is already taken.')
     except Player.DoesNotExist:
       pass
     try:
-      Player.objects.get(ldap = ldap)
+      Player.objects.get(game = game, ldap = ldap)
       return _sendError('the ldap ' + ldap + ' is already registered.')
     except Player.DoesNotExist:
       pass
