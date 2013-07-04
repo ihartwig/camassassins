@@ -69,12 +69,12 @@ def handleSms(request):
     return _handleAnswer(msg_parsed, player, game)
   elif(msg_parsed[0] == "kill"):
     return _handleKill(msg_parsed, user, game)
-  elif(msg_parsed[0] == "dead"):
-    return _handleDead(msg_parsed, user)
+  # elif(msg_parsed[0] == "dead"):
+  #   return _handleDead(msg_parsed, user)
   elif(msg_parsed[0] == "target"):
-    return _handleTarget(msg_parsed, user)
+    return _handleTarget(msg_parsed, player, game)
   elif(msg_parsed[0] == "quit"):
-    return _handleQuit(msg_parsed, user)
+    return _handleQuit(msg_parsed, player, game)
 
   # couldn't find that command
   return _sendError('that\'s not a valid command.')
@@ -212,19 +212,25 @@ def _finishKill(answer, player, game):
 
 
 
-def _handleDeath(msg_parsed, user):
-  """expect msg: dead"""
-  if(len(msg_parsed) != 1):
-    return _sendError('incorrect number of arguments.')
+# def _handleDeath(msg_parsed, user):
+#   """expect msg: dead"""
+#   if(len(msg_parsed) != 1):
+#     return _sendError('incorrect number of arguments.')
 
 
-def _handleTarget(msg_parsed, user):
+def _handleTarget(msg_parsed, player, game):
   """expect msg: target"""
   if(len(msg_parsed) != 1):
     return _sendError('incorrect number of arguments.')
+  try:
+    target = Player.objects.get(game = game,
+                                phone_number = player.target_number)
+  except Player.DoesNotExist:
+    return _sendError('Couldn\'t find your target.')
+  return _sendResponse('Your target is ' + target.ldap + '@google.com.')
 
 
-def _handleQuit(msg_parsed, user):
+def _handleQuit(msg_parsed, player, game):
   """expect msg: quit"""
   if(len(msg_parsed) != 1):
     return _sendError('incorrect number of arguments.')
