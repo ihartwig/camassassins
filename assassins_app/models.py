@@ -3,6 +3,7 @@ from django.db import models
 class Game(models.Model):
   name = models.CharField(max_length=40, unique = True)
   number = models.CharField(max_length=20, unique = True)
+  token = models.CharField(max_length = 200, unique = True)
   registration_open = models.BooleanField(default = False)
   game_started = models.BooleanField(default = False)
 
@@ -19,6 +20,12 @@ class Player(models.Model):
   ldap = models.CharField(max_length=200, unique = True)
   is_alive = models.BooleanField(default = True)
   waiting_response = models.CharField(max_length=40, null = True, blank = True)
+  kill_count = models.IntegerField(default=0)
 
   def __unicode__(self):
     return self.alias + ' (' + self.phone_number + ', ' + self.ldap + '@)'
+
+class Activity(models.Model):
+  game = models.ForeignKey(Game)
+  activity = models.CharField(max_length = 500)
+  datetime = models.DateTimeField(auto_now_add = True)
