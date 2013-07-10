@@ -20,13 +20,36 @@ def reset_players(model_admin, request, queryset):
 
 
 def assign_targets(model_admin, request, queryset):
+  def is_derangement(old_list, new_list):
+    for i in range(len(old_list)):
+      if old_list[i] == new_list[i]:
+        return False
+    return True
+
+  def is_cyclic(players, targets):
+    unique_players = set()
+    current_player = 0
+    for hop in range(len(players)):
+      unique_players.add(players[current_player])
+      current_player = players.index(targets[current_player])
+    return True if len(unique_players) == len(players) else False
+
+
   for game in queryset:
-    # TODO: make sure we didn't assign themselves
-    players = Player.objects.filter(game = game)
+    # generate target list
+    players = Player.objects.filter(game = game).order_by('phone_number')
     player_numbers = [player.phone_number for player in players]
-    shuffle(player_numbers)
+    shuffled_numbers = player_numbers[:] # make a copy
+    while not (is_derangement(player_numbers, shuffled_numbers) and
+        is_cyclic(player_numbers, shuffled_numbers)):
+      shuffle(shuffled_numbers)
+
+    print player_numbers
+    print shuffled_numbers
+
+    # assign targets to players
     for player in players:
-      player.target_number = player_numbers.pop()
+      player.target_number = shuffled_numbers.pop(0)
       player.save()
 
 
