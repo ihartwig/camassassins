@@ -80,6 +80,10 @@ def handleSms(request):
   return _sendError('that\'s not a valid command.')
 
 
+def displayScoreboard(request):
+  pass
+
+
 def _handleEcho(msg_parsed, user):
   """expect msg: echo <repeated>"""
   if(len(msg_parsed) != 2):
@@ -235,9 +239,53 @@ def _handleQuit(msg_parsed, player, game):
   if(len(msg_parsed) != 1):
     return _sendError('incorrect number of arguments.')
 
+  player.waiting_response = 'quitting'
+  player.save()
 
-def _finishQuit():
-  pass
+  return _sendResponse('Are you sure you want to quit? ' +
+                           'Please respond with [yes/no].')
+
+
+def _finishQuit(answer, player, game):
+  if(answer == 'no'):
+    player.waiting_response = ''
+    player.save()
+    return _sendResponse('It\'s ok. We forgive you.')
+  else:
+    # kill the current player
+    player.is_alive = False
+    player.save()
+
+    # get the hunter/target objects
+    try:
+      hunter = Player.objects.get(game = game,
+                                  is_alive = True,
+                                  target_number = player.phone_number)
+    except Player.DoesNotExist:
+      return _sendError('Couldn\'t find your hunter.')
+    try:
+      target = Player.objects.get(game = game,
+                                  phone_number = player.target_number)
+    except Player.DoesNotExist:
+      return _sendError('Couldn\'t find your target.')
+
+    if(player.target_number == hunter.phone_number):
+      # there were only 2 players left; hunter wins
+      hunter.target_number = ''
+      hunter.save()
+      _sendNewMessage('Congrats. You win!', hunter.phone_number, game.token)
+
+    else:
+      # change target of hunter and notify
+      hunter.target_number = player.target_number
+      hunter.save()
+      _sendNewMessage('Your target quit. Your new target is ' + target.ldap +
+                          '@google.com.',
+                      hunter.phone_number,
+                      game.token)
+
+    # accept defeat
+    return _sendResponse('That\'s ok. Better luck next time.')
 
 
 def _handleAnswer(msg_parsed, player, game):
@@ -251,6 +299,8 @@ def _handleAnswer(msg_parsed, player, game):
     return _sendResponse('We\'re still waiting on your victim.')
   elif(waiting_response == 'killed'):
     return _finishKill(answer, player, game)
+  elif(waiting_response == 'quitting'):
+    return _finishQuit(answer, player, game)
   else:
     return _sendError('You\'re waiting for something, but I can\'t tell what')
 
@@ -259,7 +309,8 @@ def _handleSendMessage(s):
   """used to send messages other than replies"""
   if(s.parameters['outboundmsg'] is not None and
       s.parameters['outboundnum'] is not None):
-    return _sendResponse(s.parameters['outboundmsg'], s.parameters['outboundnum'])
+    return _sendResponse(s.parameters['outboundmsg'],
+                         s.parameters['outboundnum'])
   else:
     return http.HttpResponseBadRequest('')
 
