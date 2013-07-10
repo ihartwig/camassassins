@@ -18,6 +18,10 @@ def reset_players(model_admin, request, queryset):
       player.kill_count = 0
       player.save()
 
+  model_admin.message_user(
+    request,
+    "Reset players in %d game(s)." % len(queryset))
+
 
 def assign_targets(model_admin, request, queryset):
   def is_derangement(old_list, new_list):
@@ -44,18 +48,21 @@ def assign_targets(model_admin, request, queryset):
         is_cyclic(player_numbers, shuffled_numbers)):
       shuffle(shuffled_numbers)
 
-    print player_numbers
-    print shuffled_numbers
-
     # assign targets to players
     for player in players:
       player.target_number = shuffled_numbers.pop(0)
       player.save()
 
+  model_admin.message_user(
+      request,
+      "Successfully assigned targets for %d game(s)." % len(queryset))
+
 
 def send_initial_targets(model_admin, request, queryset):
+  num_players = 0
   for game in queryset:
     players = Player.objects.filter(game = game)
+    num_players += len(players)
     for player in players:
       try:
         target = Player.objects.get(game = game,
@@ -68,6 +75,11 @@ def send_initial_targets(model_admin, request, queryset):
       _sendNewMessage('Your initial target is ' + target.ldap + '@google.com.',
                       player.phone_number,
                       game.token)
+
+  model_admin.message_user(
+      request,
+      "Sent initial target to %d user(s) in %d game(s)." % 
+      (num_players, len(queryset)))
 
 
 def _sendNewMessage(msg, to, token):
