@@ -104,5 +104,10 @@ class GameAdmin(admin.ModelAdmin):
              send_initial_targets]
 
 
+class PlayerAdmin(admin.ModelAdmin):
+  list_display = ('__unicode__', 'game', 'phone_number', 'ldap', 'alias')
+  list_filter = ('game', 'is_alive')
+
+
 admin.site.register(Game, GameAdmin)
-admin.site.register(Player)
+admin.site.register(Player, PlayerAdmin)
