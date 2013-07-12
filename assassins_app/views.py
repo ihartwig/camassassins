@@ -7,6 +7,10 @@ import requests
 from tropo import Tropo, Session, Say
 
 
+def handleStatic(request):
+  return http.HttpResponseNotFound
+
+
 # decorator to bypass cookie requirement
 @csrf_exempt
 def handleSms(request):

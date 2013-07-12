@@ -6,16 +6,21 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     # Examples:
-    # url(r'^$', 'assassins.views.home', name='home'),
+    # url(r'^$', 'assassins.views.staticPage', name='assassins.views.staticPage'),
+    url(r'^(?P<page_name>[\w.]+)$', 'assassins.views.staticPage', name='assassins.views.staticPage'),
     # url(r'^assassins/', include('assassins.foo.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:
-    # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
+    url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
     # Uncomment the next line to enable the admin:
     url(r'^admin/', include(admin.site.urls)),
 
     url(r'^handleSms',
         'assassins_app.views.handleSms',
-        name = 'assassins_app.views.handleSms')
+        name='assassins_app.views.handleSms'),
+
+    # url(r'^$',
+    #     'assassins_app.views.handleStatic',
+    #     name='assassins_app.views.handleStatic'),
 )
