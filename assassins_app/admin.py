@@ -1,11 +1,26 @@
 from django.contrib import admin
+from django.shortcuts import render_to_response
+from django.template import RequestContext
 from assassins_app.models import Game, Player
 from random import shuffle
 import requests
+from django import forms
 
 
 def delete_all_players(model_admin, request, queryset):
-  pass
+  if 'apply' in request.POST:
+    # we got confirmation back, go ahead and delete
+    for game in queryset:
+      players = Player.objects.filter(game = game).delete()
+    model_admin.message_user(
+        request,
+        "Deleted all players in %d game(s)." % len(queryset))
+
+  else:
+    # display a confirmation form
+    return render_to_response('admin/delete_all_players.html',
+                              {'games': queryset},
+                              context_instance = RequestContext(request))
 
 
 def reset_players(model_admin, request, queryset):
@@ -82,6 +97,41 @@ def send_initial_targets(model_admin, request, queryset):
       (num_players, len(queryset)))
 
 
+class SendMassMessageForm(forms.Form):
+  message = forms.CharField(max_length = 160,
+                            required = True)
+
+
+def send_mass_message(model_admin, request, queryset):
+  form = None
+
+  if 'apply' in request.POST:
+    # message form submitted; validate
+    form = SendMassMessageForm(request.POST)
+    if form.is_valid():
+      message = form.cleaned_data['message']
+      for game in queryset:
+        players = Player.objects.filter(game = game)
+        for player in players:
+          _sendNewMessage(message, player.phone_number, game.token)
+      model_admin.message_user(request, "Sent mass message.")
+      return HttpResponseRedirect(request.get_full_path())
+    else:
+      model_admin.message_user(request, "Message was not valid.")
+  
+  if not form:
+    # we have either never displayed the form
+    form = SendMassMessageForm()
+  
+  return render_to_response('admin/send_mass_message.html',
+                            {
+                              'games': queryset,
+                              'form': form,
+                            },
+                            context_instance = RequestContext(request))
+
+
+
 def _sendNewMessage(msg, to, token):
   payload = {
     'action': 'create',
@@ -101,7 +151,8 @@ class GameAdmin(admin.ModelAdmin):
   actions = [delete_all_players,
              reset_players,
              assign_targets,
-             send_initial_targets]
+             send_initial_targets,
+             send_mass_message]
 
 
 admin.site.register(Game, GameAdmin)

@@ -1,0 +1,15 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+
+<p>Send a mass message to all players of the following games:</p>
+<ul>{{games|unordered_list}} </ul>
+
+<form action="" method="post">
+  {% csrf_token %}
+  {{form}}
+  <input type="hidden" name="action" value="delete_all_players" />
+  <input type="submit" name="apply" value="Send" />
+</form>
+
+{% endblock %}
