@@ -172,9 +172,9 @@ def _handleKill(msg_parsed, user, game):
 
 def _finishKill(answer, player, game):
   try:
-    killer = Player.objects.get(game = game,
-                                is_alive = True,
-                                target_number = player.phone_number)
+    killer = Player.objects.get(game=game,
+                                is_alive=True,
+                                target_number=player.phone_number)
   except Player.DoesNotExist:
     return _sendError('couldn\'t find your killer in the game.')
   
