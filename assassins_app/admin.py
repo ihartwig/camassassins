@@ -7,20 +7,38 @@ import requests
 from django import forms
 
 
+class DeleteAllPlayersForm(forms.Form):
+  _selected_action = forms.CharField(widget=forms.MultipleHiddenInput)
+
+
 def delete_all_players(model_admin, request, queryset):
-  if 'apply' in request.POST:
-    # we got confirmation back, go ahead and delete
+  form = None
+
+  if 'cancel' in request.POST:
+    # user clicked cancel
+    model_admin.message_user(request, 'Action canceled.')
+    return
+
+  if 'apply' in request.POST and request.POST['action'] == 'delete_all_players':
+    # message form submitted; validate
+    form = DeleteAllPlayersForm(request.POST)
     for game in queryset:
       players = Player.objects.filter(game = game).delete()
-    model_admin.message_user(
-        request,
-        "Deleted all players in %d game(s)." % len(queryset))
-
-  else:
-    # display a confirmation form
-    return render_to_response('admin/delete_all_players.html',
-                              {'games': queryset},
-                              context_instance = RequestContext(request))
+    model_admin.message_user(request, "Deleted all players.")
+    return
+  
+  if not form:
+    # we have either never displayed the form
+    form = DeleteAllPlayersForm(
+        initial={'_selected_action':
+        request.POST.getlist(admin.ACTION_CHECKBOX_NAME)})
+  
+  return render_to_response('admin/delete_all_players.html',
+                            {
+                              'games': queryset,
+                              'form': form,
+                            },
+                            context_instance = RequestContext(request))
 
 
 def reset_players(model_admin, request, queryset):
@@ -98,6 +116,7 @@ def send_initial_targets(model_admin, request, queryset):
 
 
 class SendMassMessageForm(forms.Form):
+  _selected_action = forms.CharField(widget=forms.MultipleHiddenInput)
   message = forms.CharField(max_length = 160,
                             required = True)
 
@@ -105,7 +124,12 @@ class SendMassMessageForm(forms.Form):
 def send_mass_message(model_admin, request, queryset):
   form = None
 
-  if 'apply' in request.POST:
+  if 'cancel' in request.POST:
+    # user clicked cancel
+    model_admin.message_user(request, 'Action canceled.')
+    return
+
+  if 'apply' in request.POST and request.POST['action'] == 'send_mass_message':
     # message form submitted; validate
     form = SendMassMessageForm(request.POST)
     if form.is_valid():
@@ -115,13 +139,15 @@ def send_mass_message(model_admin, request, queryset):
         for player in players:
           _sendNewMessage(message, player.phone_number, game.token)
       model_admin.message_user(request, "Sent mass message.")
-      return HttpResponseRedirect(request.get_full_path())
+      return
     else:
       model_admin.message_user(request, "Message was not valid.")
   
   if not form:
     # we have either never displayed the form
-    form = SendMassMessageForm()
+    form = SendMassMessageForm(
+        initial={'_selected_action':
+        request.POST.getlist(admin.ACTION_CHECKBOX_NAME)})
   
   return render_to_response('admin/send_mass_message.html',
                             {
