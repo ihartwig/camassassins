@@ -10,8 +10,10 @@ from tropo import Tropo, Session, Say
 
 
 def activityFeed(request):
-  if (not game_number = request.GET['gamenumber']):
+  if ('gamenumber' not in request):
     return http.HttpResponseNotFound
+  else:
+    game_number = request.GET['gamenumber']
 
   # get the game associated with this request
   try:
@@ -19,7 +21,7 @@ def activityFeed(request):
   except Game.DoesNotExist:
     return http.HttpResponseNotFound()
 
-  if (request.GET['fetchlimit']):
+  if ('fetchlimit' not in request):
     # this is an initialization request; return fetchlimit most recent entries
     fetch_limit = request.GET['fetchlimit']
   else: 

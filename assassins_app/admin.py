@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-from assassins_app.models import Game, Player
+from assassins_app.models import Game, Player, Activity
 from random import shuffle
 import requests
 from django import forms
