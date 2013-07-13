@@ -3,7 +3,6 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import render
 from django.template import TemplateDoesNotExist
 
-
 def staticPage(request, page_name):
   template_name = ''
   if (not page_name):

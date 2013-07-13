@@ -2,6 +2,7 @@ from assassins_app.models import Game, Player
 from django import http
 from django.db import DatabaseError, IntegrityError
 from django.views.decorators.csrf import csrf_exempt
+from django.utils import simplejson
 import re
 import requests
 from tropo import Tropo, Session, Say
@@ -84,9 +85,12 @@ def handleSms(request):
   return _sendError('that\'s not a valid command.')
 
 
-def displayScoreboard(request):
-  pass
-
+def scoreboard(request):
+  players = Player.objects.extra(order_by = ['-kill_count'])
+  json = simplejson.dumps([{'alias': o.alias,
+                            'kills': o.kill_count,
+                            'is_alive': o.is_alive} for o in players])
+  return http.HttpResponse(json)
 
 def _handleEcho(msg_parsed, user):
   """expect msg: echo <repeated>"""
