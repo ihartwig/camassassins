@@ -12,24 +12,29 @@ an area code near you. This is the number you'll send all future texts to.
 ## Django setup ##
 
 On the server you want to run the game on, download this repository. Then, run
-`./manage.py syncdb && ./manage.py runserver 0.0.0.0:4242`
+`./manage.py syncdb && ./manage.py runserver 0.0.0.0:4242`. You'll be prompted
+about setting up an admin account.
 
 Point your browser at http://yourserver.com:4242/admin, and add a game. Give it
-a name, put the tropo application's  phone number in the `number` spot, and
-check the box for `registration open`.
+a name, put the tropo application's  phone number in the `number` spot and the SMS
+token in the `token` spot, and check the box for `registration open`.
 
 ## Player registrations ##
 
 Players send an SMS message "join [id] [alias]" to the Tropo phone number,
 where the id is some verifiable value (like an email address), that will be
-shown to the player's victims when he or she kills them. The alias is only used
+shown to the player's victims when xe kills them. The alias is only used
 for the public scoreboard.
 
 When all players have registered, go back to the admin page, and run the Admin 
 Action for assigning targets, and then run the Action for sending initial
-targets. Players should receive their targets.
+targets. Players should receive their targets' ids.
 
 ## Playing the game ##
 
-When a player successfully kills his or her target, he or she sends a message
-"kill 
+When a player successfully kills xyr target, xe sends a message "kill [id]" where
+id is the target's id. A message will be sent to the target, asking xem to confirm.
+If xe replies with "yes", xe is removed from the queue and xyr killer gets xyr next target.
+
+When only one player remains, xe has won, and will be notified.
+
