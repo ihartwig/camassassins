@@ -10,8 +10,7 @@ def staticPage(request, page_name):
     template_name = 'staticpage/index.html'
   else: 
     template_name = 'staticpage/' + page_name
-
   try:
     return render(request, template_name)
   except TemplateDoesNotExist:
-    return http.HttpResponseNotFound()
+    raise http.Http404
