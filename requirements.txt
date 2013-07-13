@@ -1,0 +1,6 @@
+Django==1.5.1
+distribute==0.6.45
+django-taggit==0.10a1
+requests==1.2.3
+simplejson==3.3.0
+virtualenv==1.9.1

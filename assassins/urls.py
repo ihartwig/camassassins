@@ -1,4 +1,5 @@
 from django.conf.urls import patterns, include, url
+from django.views.generic import RedirectView
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
@@ -12,7 +13,8 @@ urlpatterns = patterns('',
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
-    # Uncomment the next line to enable the admin:
+    url(r'^admin$', RedirectView.as_view(url='admin/')),
+
     url(r'^admin/', include(admin.site.urls)),
 
     url(r'^handleSms',
@@ -20,6 +22,9 @@ urlpatterns = patterns('',
         name='assassins_app.views.handleSms'),
 
     url(r'^(?P<page_name>[\w%.]*)$', 'assassins.views.staticPage', name='assassins.views.staticPage'),
+
+    url(r'^api/scoreboard$', 'assassins_app.views.scoreboard', name='assassins_app.scoreboard'),
+    url(r'^api/activity/feed', 'assassins_app.views.activityFeed', name='assassins_app.activityFeed'),
 
     # url(r'^$',
     #     'assassins_app.views.handleStatic',

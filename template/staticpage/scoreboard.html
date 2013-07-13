@@ -1,0 +1,38 @@
+{% extends "skeleton.html" %}
+{% block head %}
+<title>Scoreboard</title>
+<script type="text/javascript">
+function SBCtrl($scope, $http) {
+    var getData = function() {
+        $http({method:'GET', url:'/api/scoreboard'}).success(function(data) {
+        $scope.players = data;
+
+        // Add some style stuff
+        $.each($scope.players, function(index, value) {
+            if ($scope.players[index]['is_alive'] == false) {
+                    $scope.players[index]['dead'] = 'error';
+                }
+            });
+        });
+    };
+    getData();
+    setInterval(getData, 10*1000);
+}
+
+</script>
+{% endblock %}
+{% block content %}
+<div ng-controller="SBCtrl">
+    <table class="table">
+        <tr><td>Alias</td><td>Kill Count</td><td>Status</tr></tr>
+
+        {% verbatim %}
+        <tr ng-repeat="player in players" class="{{player.dead}}">
+        <td>{{player.alias}}</td> 
+        <td>{{player.kill_count}}</td> 
+        <td>{{player.is_alive}}</td> 
+        {% endverbatim %}
+        </tr>
+    </table>
+</div>
+{% endblock %}
