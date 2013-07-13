@@ -2,10 +2,14 @@
 {% block head %}
 <title>Scoreboard</title>
 <script type="text/javascript">
-function SBCtrl($scope) {
-    $scope.players = [{alias:'aa', kill_count:5, is_alive:true},
-        {alias:'bb', kill_count:6, is_alive:false}];
-    x = $scope.players
+function SBCtrl($scope, $http) {
+    var getData = function() {
+        $http({method:'GET', url:'/api/scoreboard'}).success(function(data) {
+        $scope.players = data;
+        });
+    };
+    getData();
+    setInterval(getData, 10*1000);
 }
 
 </script>

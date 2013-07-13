@@ -88,7 +88,7 @@ def handleSms(request):
 def scoreboard(request):
   players = Player.objects.extra(order_by = ['-kill_count'])
   json = simplejson.dumps([{'alias': o.alias,
-                            'kills': o.kill_count,
+                            'kill_count': o.kill_count,
                             'is_alive': o.is_alive} for o in players])
   return http.HttpResponse(json)
 
