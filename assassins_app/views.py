@@ -216,10 +216,18 @@ def _finishKill(answer, player, game):
     killer.kill_count = killer.kill_count + 1
     killer.waiting_response = ''
     killer.save()
+
+    # record in activity list
+    msg = player.alias + ' has been killed by ' + killer.alias
+    Activity.objects.create(activity=msg)
+
     if(player.target_number == killer.phone_number):
       # there were only 2 players left; killer wins
       killer.target_number = ''
       killer.save()
+      # record in activity list
+      msg = killer.alias + ' is the last assassin standing. Congrats!'
+      Activity.objects.create(activity=msg)
       _sendNewMessage('Congrats. You win!', killer.phone_number, game.token)
       return _sendResponse('Death recorded.')
     else:
@@ -286,6 +294,9 @@ def _finishQuit(answer, player, game):
     # kill the current player
     player.is_alive = False
     player.save()
+
+    # record in activity list
+    Activity.objects.create(activity=player.alias + ' has quit the game.')
 
     # get the hunter/target objects
     try:
