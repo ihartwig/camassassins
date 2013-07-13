@@ -1,0 +1,23 @@
+{% extends "skeleton.html" %}
+{% block head %}
+<title>Scoreboard</title>
+<script type="text/javascript">
+function SBCtrl($scope) {
+    $scope.players = [{alias:'aa', kill_count:5, is_alive:true},
+        {alias:'bb', kill_count:6, is_alive:false}];
+    x = $scope.players
+}
+
+</script>
+{% endblock %}
+{% block content %}
+<div ng-controller="SBCtrl">
+    <ul class="unstyled">
+        <li ng-repeat="player in players">
+        {% verbatim %}
+        {{player.alias}} {{player.kill_count}} {{player.is_alive}}
+        {% endverbatim %}
+        </li>
+    </ul>
+</div>
+{% endblock %}
