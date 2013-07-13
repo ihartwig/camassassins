@@ -172,5 +172,6 @@ class PlayerAdmin(admin.ModelAdmin):
   list_filter = ('game', 'is_alive')
 
 
+admin.site.register(Activity)
 admin.site.register(Game, GameAdmin)
 admin.site.register(Player, PlayerAdmin)

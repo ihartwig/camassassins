@@ -1,11 +1,45 @@
 from assassins_app.models import Game, Player, Activity
 from django import http
+from django.core import serializers
 from django.db import DatabaseError, IntegrityError
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import simplejson
 import re
 import requests
 from tropo import Tropo, Session, Say
+
+
+def activityFeed(request):
+  if (not game_number = request.GET['gamenumber']):
+    return http.HttpResponseNotFound
+
+  # get the game associated with this request
+  try:
+    game = Game.objects.get(number = game_number)
+  except Game.DoesNotExist:
+    return http.HttpResponseNotFound()
+
+  if (request.GET['fetchlimit']):
+    # this is an initialization request; return fetchlimit most recent entries
+    fetch_limit = request.GET['fetchlimit']
+  else: 
+    fetch_limit = 50
+
+  activity = (Activity.objects
+      .filter(game=game)
+      .extra(order_by=['-datetime'])
+      [:fetch_limit])
+  json = simplejson.dumps([{'activity': o.activity,
+                            'datetime': o.datetime} for o in activity])
+  return http.HttpResponse(json)
+
+
+def scoreboard(request):
+  players = Player.objects.extra(order_by = ['-kill_count'])
+  json = simplejson.dumps([{'alias': o.alias,
+                            'kill_count': o.kill_count,
+                            'is_alive': o.is_alive} for o in players])
+  return http.HttpResponse(json)
 
 
 # decorator to bypass cookie requirement
@@ -80,18 +114,6 @@ def handleSms(request):
   # couldn't find that command
   return _sendError('that\'s not a valid command.')
 
-def activityFeed(request):
-  activity = Activity.objects.extra(order_by = ['-datetime'])[:50]
-  json = simplejson.dumps([{'activity': o.activity,
-                            'datetime': o.datetime} for o in activity])
-  return http.HttpResponse(json)
-
-def scoreboard(request):
-  players = Player.objects.extra(order_by = ['-kill_count'])
-  json = simplejson.dumps([{'alias': o.alias,
-                            'kill_count': o.kill_count,
-                            'is_alive': o.is_alive} for o in players])
-  return http.HttpResponse(json)
 
 def _handleEcho(msg_parsed, user):
   """expect msg: echo <repeated>"""
