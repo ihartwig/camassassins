@@ -8,7 +8,7 @@ def staticPage(request, page_name):
   if (not page_name):
     template_name = 'staticpage/index.html'
   else: 
-    template_name = 'staticpage/' + page_name
+    template_name = 'staticpage/' + page_name + '.html'
   try:
     return render(request, template_name)
   except TemplateDoesNotExist:
