@@ -24,6 +24,7 @@ urlpatterns = patterns('',
     url(r'^(?P<page_name>[\w%.]*)$', 'assassins.views.staticPage', name='assassins.views.staticPage'),
 
     url(r'^api/scoreboard$', 'assassins_app.views.scoreboard', name='assassins_app.scoreboard'),
+    url(r'^api/activity/feed', 'assassins_app.views.activityFeed', name='assassins_app.activityFeed'),
 
     # url(r'^$',
     #     'assassins_app.views.handleStatic',

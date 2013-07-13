@@ -1,4 +1,4 @@
-from assassins_app.models import Game, Player
+from assassins_app.models import Game, Player, Activity
 from django import http
 from django.db import DatabaseError, IntegrityError
 from django.views.decorators.csrf import csrf_exempt
@@ -84,6 +84,11 @@ def handleSms(request):
   # couldn't find that command
   return _sendError('that\'s not a valid command.')
 
+def activityFeed(request):
+  activity = Activity.objects.extra(order_by = ['-datetime'])[:50]
+  json = simplejson.dumps([{'activity': o.activity,
+                            'datetime': o.datetime} for o in activity])
+  return http.HttpResponse(json)
 
 def scoreboard(request):
   players = Player.objects.extra(order_by = ['-kill_count'])
