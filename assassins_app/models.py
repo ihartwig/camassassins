@@ -13,14 +13,14 @@ class Game(models.Model):
 
 class Player(models.Model):
   game = models.ForeignKey(Game)
-  # assume that we'll never have overlapping phone numbers
+  target = models.ForeignKey('self', blank = True, null = True)
   phone_number = models.CharField(max_length = 20, unique = True)
-  target_number = models.CharField(max_length = 20, null = True, blank = True)
   alias = models.CharField(max_length=200, unique = True)
   ldap = models.CharField(max_length=200, unique = True)
   is_alive = models.BooleanField(default = True)
-  waiting_response = models.CharField(max_length=40, null = True, blank = True)
-  kill_count = models.IntegerField(default=0)
+  kill_count = models.IntegerField(default = 0)
+  code = models.IntegerField(default = 0)
+  incorrect_codes = models.IntegerField(default = 0)
 
   def __unicode__(self):
     return self.alias + ' (' + self.phone_number + ', ' + self.ldap + '@)'

@@ -45,10 +45,11 @@ def reset_players(model_admin, request, queryset):
   for game in queryset:
     players = Player.objects.filter(game = game)
     for player in players:
-      player.target_number = ''
+      player.target = None
       player.waiting_response = ''
       player.is_alive = True
       player.kill_count = 0
+      player.incorrect_codes = 0
       player.save()
 
   model_admin.message_user(
@@ -69,7 +70,7 @@ def assign_targets(model_admin, request, queryset):
         target = players[indices[i]]
       else:
         target = players[indices[0]]
-      players[player_index].target_number = target.phone_number
+      players[player_index].target = target
       players[player_index].save()
 
   model_admin.message_user(
@@ -83,17 +84,14 @@ def send_initial_targets(model_admin, request, queryset):
     players = Player.objects.filter(game = game)
     num_players += len(players)
     for player in players:
-      try:
-        target = Player.objects.get(game = game,
-                                    phone_number = player.target_number)
-      except Player.DoesNotExist:
-        _sendNewMessage('Couldn\'t find your initial target. Contact game admin.',
-                        player.phone_number,
-                        game.token)
-      
-      _sendNewMessage('Your initial target is ' + target.ldap + '@google.com.',
-                      player.phone_number,
-                      game.token)
+        if player.target is None:
+            _sendNewMessage('Couldn\'t find your initial target. Contact game admin.',
+                            player.phone_number,
+                            game.token)
+        else:
+            _sendNewMessage('Your initial target is who/' + target.ldap,
+                            player.phone_number,
+                            game.token)
 
   model_admin.message_user(
       request,
@@ -158,7 +156,6 @@ def _sendNewMessage(msg, to, token):
   else:
     return False
 
-
 class GameAdmin(admin.ModelAdmin):
   actions = [delete_all_players,
              reset_players,
@@ -166,11 +163,9 @@ class GameAdmin(admin.ModelAdmin):
              send_initial_targets,
              send_mass_message]
 
-
 class PlayerAdmin(admin.ModelAdmin):
-  list_display = ('__unicode__', 'game', 'phone_number', 'ldap', 'alias', 'target_number')
+  list_display = ('__unicode__', 'game', 'phone_number', 'ldap', 'alias', 'target')
   list_filter = ('game', 'is_alive')
-
 
 admin.site.register(Game, GameAdmin)
 admin.site.register(Player, PlayerAdmin)
