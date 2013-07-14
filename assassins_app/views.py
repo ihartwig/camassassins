@@ -123,6 +123,8 @@ def handleSms(request):
     return _handleKill(msg_parsed, player, game)
   # elif(msg_parsed[0] == "dead"):
   #   return _handleDead(msg_parsed, user)
+  elif msg_parsed[0] == "secret":
+    return _sendResponse(player.code)
   elif(msg_parsed[0] == "target"):
     return _handleTarget(msg_parsed, player, game)
   elif(msg_parsed[0] == "quit"):
