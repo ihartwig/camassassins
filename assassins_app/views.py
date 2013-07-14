@@ -56,6 +56,7 @@ def scoreboard(request):
                             'is_alive': o.is_alive} for o in players])
   return http.HttpResponse(json)
 
+
 # decorator to bypass cookie requirement
 @csrf_exempt
 def handleSms(request):
@@ -113,6 +114,11 @@ def handleSms(request):
     player = Player.objects.get(game = game, phone_number = user)
   except Player.DoesNotExist:
     return _sendError('you don\'t exist in this game; do you need to register?')
+
+  # before we go on, check the player is alive
+  if(not player.is_alive):
+    return _sendError('It looks like you\'re already dead!')
+
   if (msg_parsed[0] == "kill"):
     return _handleKill(msg_parsed, player, game)
   # elif(msg_parsed[0] == "dead"):
@@ -131,6 +137,7 @@ def _handleEcho(msg_parsed, user):
   if(len(msg_parsed) != 2):
     return _sendError('incorrect number of arguments.')
   return _sendResponse(str(user) + ' said: ' + msg_parsed[1])
+
 
 def _handleJoin(msg_parsed, user, game):
   """expect msg: join <ldap> <alias>"""
@@ -175,10 +182,12 @@ def _handleJoin(msg_parsed, user, game):
     print e
     return _sendError('database error.')
 
+
 def _handleKill(msg_parsed, player, game):
   """expect msg: kill <code>"""
   if(len(msg_parsed) != 2):
-    return _sendError('incorrect number of arguments.')
+    return _sendError('incorrect number of arguments.'
+        ' Did you forget to send your target\'s secret code?')
 
   if(not game.game_started):
     return _sendError('the game hasn\'t started yet!')
@@ -193,9 +202,10 @@ def _handleKill(msg_parsed, player, game):
   if target_code != target.code:
     return _wrongCode(player)
   else:
-    return killPlayer(player, target, game)
+    return _killPlayer(player, target, game)
 
-def killPlayer(killer, target, game):
+
+def _killPlayer(killer, target, game):
     target.is_alive = False
     target.save()
 
