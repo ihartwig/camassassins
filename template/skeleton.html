@@ -7,10 +7,48 @@
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script>
     {% block head %}{% endblock head %}
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="{% static "css/bootstrap.min.css" %}" rel="stylesheet" media="screen">
+    <link href="{% static "css/bootstrap.min.css" %}" rel="stylesheet">
+    <!-- <link href="{% static "css/bootstrap-responsive.min.css" %}" rel="stylesheet" media="screen"> -->
+    <link href="{% static "css/basic.css" %}" rel="stylesheet">
   </head>
   <body>
-    <h1>Assassins</h1>
-    <div id="content">{% block content %}{% endblock content %}</div>
+    <div id="wrap">
+      <div class="container">
+
+        <div class="row">
+          <div class="span12">
+            <div id="page-header">
+              <a href="/"><img id="false-icon" src="{% static "img/blank.png" %}" alt="Cam Assassins"></a>
+              <ul class="nav nav-pills pull-right">
+                <li><a href="/">Home</a></li>
+                <li><a href="/rules.html">Rules</a></li>
+                <li><a href="/gamestats.html">Game Statistics</a></li>
+                <li><a href="/smscommands.html">SMS Commands</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="span12">
+            <div id="content">{% block content %}{% endblock content %}</div>
+          </div>
+        </div>
+
+      </div>
+      <div id="push"></div>
+    </div>
+
+    <div id="footer">
+      <div class="container">
+        <hr>
+        <div class="row">
+          <div class="span12">
+            <p>Cam Intern Assassins brought to you by <a href="https://teams.googleplex.com/#person:u=viona">Viona</a>, <a href="https://teams.googleplex.com/#person:u=ihartwig">Ian</a>, <a href="https://teams.googleplex.com/#person:u=vaarnan">Vaarnan</a>, and <a href="https://teams.googleplex.com/#person:u=weinsteinraun">Ben</a>.</p>
+            <p>Remember to watch your back, and have fun! Questions? Concerns? Contact the game admin, <a href="https://teams.googleplex.com/#person:u=viona">Viona</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>
