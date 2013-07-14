@@ -191,7 +191,7 @@ def _handleKill(msg_parsed, player, game):
   target_code = msg_parsed[1]
 
   if target_code != target.code:
-    return wrongCode(player)
+    return _wrongCode(player)
   else:
     return killPlayer(player, target, game)
 
@@ -201,6 +201,7 @@ def killPlayer(killer, target, game):
 
     killer.kill_count = killer.kill_count + 1
     killer.target = target.target
+    killer.incorrect_codes = 0
 
     Activity.objects.create(game=game,
                             activity='killed',
@@ -218,6 +219,7 @@ def killPlayer(killer, target, game):
                               player1=killer)
       return _sendResponse('Congrats. You win!')
     else:
+
       killer.save()
       if killer.target is None:
         return _sendError('Couldn\'t find new target. ' + ADMIN_MESSAGE)
@@ -226,15 +228,19 @@ def killPlayer(killer, target, game):
         return _sendResponse(msg)
 
 
-def wrongCode(player):
+def _wrongCode(player):
     player.incorrect_codes = player.incorrect_codes + 1
     if player.incorrect_codes > INCORRECT_CODE_LIMIT:
-        player.is_alive = False
-        player.save()
-        return _sendError('you have been lynched for brute-forcing the system... :-(')
-    player.save()
-    return _sendError('could not verify kill. you have %d/%d attempts left' % (INCORRECT_CODE_LIMIT-player.incorrect_codes,
-        INCORRECT_CODE_LIMIT))
+        return _forceQuitPlayer(
+            'You have been lynched for brute-forcing the system... =(',
+            player,
+            game)
+    else:
+      player.save()
+      return _sendError(
+        'could not verify kill. you have %d/%d attempts left' %
+        (INCORRECT_CODE_LIMIT-player.incorrect_codes, INCORRECT_CODE_LIMIT))
+
 
 def _handleTarget(msg_parsed, player, game):
   """expect msg: target"""
@@ -242,54 +248,62 @@ def _handleTarget(msg_parsed, player, game):
     return _sendError('incorrect number of arguments.')
   return _sendResponse('Your target is who/' + player.target.ldap)
 
+
 def _handleQuit(msg_parsed, player, game):
   """expect msg: quit code"""
   if(len(msg_parsed) != 2):
-    return _sendError('incorrect number of arguments.')
+    return _sendError('incorrect number of arguments.'
+        ' Did you remember to send your secret code?')
 
   code = msg_parsed[1]
   if player.code != code:
     return _sendResponse('Wrong code. Who are you?')
   else:
-    player.is_alive = False
-    player.save()
+    return _forceQuitPlayer('That\'s ok. Better luck next time.', player, game)
+
+
+def _forceQuitPlayer(quit_msg, player, game):
+  player.is_alive = False
+  player.incorrect_codes = 0
+  player.save()
+
+  # record in activity list
+  Activity.objects.create(game=game,
+                          activity='quit',
+                          player1=player)
+
+  # get the hunter/target objects
+  try:
+    hunter = Player.objects.get(game = game,
+                                is_alive = True,
+                                target = player)
+  except Player.DoesNotExist:
+    return _sendError('Couldn\'t find your hunter.')
+  if player.target is None:
+    return _sendError('Couldn\'t find your target.')
+
+  if(player.target == hunter):
+    # there were only 2 players left; hunter wins
+    hunter.target = None
+    hunter.save()
+    _sendNewMessage('Congrats. You win!', hunter.phone_number, game.token)
 
     # record in activity list
     Activity.objects.create(game=game,
-                            activity='quit',
-                            player1=player)
+                            activity='win',
+                            player1=hunter)
 
-    # get the hunter/target objects
-    try:
-      hunter = Player.objects.get(game = game,
-                                  is_alive = True,
-                                  target = player)
-    except Player.DoesNotExist:
-      return _sendError('Couldn\'t find your hunter.')
-    if player.target is None:
-      return _sendError('Couldn\'t find your target.')
+  else:
+    # change target of hunter and notify
+    hunter.target = player.target
+    hunter.save()
+    _sendNewMessage('Your target quit. Your new target is who/' + target.ldap,
+                    hunter.phone_number,
+                    game.token)
 
-    if(player.target == hunter):
-      # there were only 2 players left; hunter wins
-      hunter.target = None
-      hunter.save()
-      _sendNewMessage('Congrats. You win!', hunter.phone_number, game.token)
+  # accept defeat
+  return _sendResponse(quit_msg)
 
-      # record in activity list
-      Activity.objects.create(game=game,
-                              activity='win',
-                              player1=hunter)
-
-    else:
-      # change target of hunter and notify
-      hunter.target = player.target
-      hunter.save()
-      _sendNewMessage('Your target quit. Your new target is who/' + target.ldap,
-                      hunter.phone_number,
-                      game.token)
-
-    # accept defeat
-    return _sendResponse('That\'s ok. Better luck next time.')
 
 def _handleSendMessage(s):
   """used to send messages other than replies"""
