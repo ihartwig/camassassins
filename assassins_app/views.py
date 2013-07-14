@@ -1,8 +1,10 @@
 from assassins_app.models import Game, Player, Activity
 from django import http
+from django.core import serializers
 from django.db import DatabaseError, IntegrityError
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import simplejson
+from django.core import serializers
 import re
 import requests
 from tropo import Tropo, Session, Say
@@ -12,8 +14,47 @@ ADMIN_LDAP = 'vionalam'
 ADMIN_MESSAGE = 'Please contact the game admin at who/'+ADMIN_LDAP
 INCORRECT_CODE_LIMIT = 5
 
-def handleStatic(request):
-  return http.HttpResponseNotFound
+def activityFeed(request):
+  if ('gamenumber' not in request.GET):
+    print('no game number')
+    return http.HttpResponseNotFound()
+  else:
+    game_number = request.GET['gamenumber']
+
+  # get the game associated with this request
+  try:
+    game = Game.objects.get(number=game_number)
+  except Game.DoesNotExist:
+    print('couldn\'t find game with that number')
+    return http.HttpResponseNotFound()
+
+  if ('fetchlimit' in request.GET):
+    # this is an initialization request; return fetchlimit most recent entries
+    fetch_limit = request.GET['fetchlimit']
+  else: 
+    fetch_limit = 50
+
+  # fetch relavent activities and respond
+  activity = (Activity.objects
+      .filter(game=game)
+      .extra(order_by=['-datetime'])
+      [:fetch_limit])
+  activity_export = [{
+        'activity': o.activity,
+        'datetime': o.datetime.isoformat(),
+        'player1_alias': o.player1.alias,
+        'player2_alias': o.player2.alias,
+      } for o in activity]
+  json = simplejson.dumps(activity_export)
+  return http.HttpResponse(json)
+
+
+def scoreboard(request):
+  players = Player.objects.extra(order_by = ['-kill_count'])
+  json = simplejson.dumps([{'alias': o.alias,
+                            'kill_count': o.kill_count,
+                            'is_alive': o.is_alive} for o in players])
+  return http.HttpResponse(json)
 
 # decorator to bypass cookie requirement
 @csrf_exempt
@@ -84,18 +125,6 @@ def handleSms(request):
   # couldn't find that command
   return _sendError('that\'s not a valid command.')
 
-def activityFeed(request):
-  activity = Activity.objects.extra(order_by = ['-datetime'])[:50]
-  json = simplejson.dumps([{'activity': o.activity,
-                            'datetime': o.datetime} for o in activity])
-  return http.HttpResponse(json)
-
-def scoreboard(request):
-  players = Player.objects.extra(order_by = ['-kill_count'])
-  json = simplejson.dumps([{'alias': o.alias,
-                            'kill_count': o.kill_count,
-                            'is_alive': o.is_alive} for o in players])
-  return http.HttpResponse(json)
 
 def _handleEcho(msg_parsed, user):
   """expect msg: echo <repeated>"""
@@ -169,12 +198,15 @@ def killPlayer(killer, target):
     target.is_alive = False
     killer.kill_count = killer.kill_count + 1
     target.save()
-    #TODO Add New activity type
-    #Add a kill board?
+    msg = player.alias + ' has been killed by ' + killer.alias
+    Activity.objects.create(activity=msg)
     _sendNewMessage("Looks like you're dead", target.phone_number, game.token)
     if target.target == killer.target:
       killer.target = None
       killer.save()
+      # record in activity list
+      msg = killer.alias + ' is the last assassin standing. Congrats!'
+      Activity.objects.create(activity=msg)
       _sendNewMessage('Congrats. You win!', killer.phone_number, game.token)
     else:
       killer.target = target.target
@@ -214,6 +246,9 @@ def _handleQuit(msg_parsed, player, game):
   else:
     player.is_alive = False
     player.save()
+
+    # record in activity list
+    Activity.objects.create(activity=player.alias + ' has quit the game.')
 
     # get the hunter/target objects
     try:

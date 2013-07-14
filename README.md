@@ -12,12 +12,16 @@ an area code near you. This is the number you'll send all future texts to.
 ## Django setup ##
 
 On the server you want to run the game on, download this repository. Then, run
-`./manage.py syncdb && ./manage.py runserver 0.0.0.0:4242`. You'll be prompted
+`./manage.py syncdb && ./manage.py runserver 0.0.0.0:<port>`. You'll be prompted
 about setting up an admin account.
 
-Point your browser at http://yourserver.com:4242/admin, and add a game. Give it
+Point your browser at http://yourserver.com:<port>/admin, and add a game. Give it
 a name, put the tropo application's  phone number in the `number` spot and the SMS
 token in the `token` spot, and check the box for `registration open`.
+
+### Model updates ###
+
+We use south for model schema updates. If the model is ever updated you just need to run `./manage.py schemamigration assassins_app --auto && ./manage.py migrate assassins_app`.
 
 ## Player registrations ##
 
