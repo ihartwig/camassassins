@@ -23,7 +23,7 @@ class Player(models.Model):
   incorrect_codes = models.IntegerField(default = 0)
 
   def __unicode__(self):
-    return self.alias + ' (' + self.phone_number + ', ' + self.ldap + '@)'
+    return self.alias + ' (' + self.game.name + ', ' + self.ldap + '@)'
 
 class Activity(models.Model):
   game = models.ForeignKey(Game)
