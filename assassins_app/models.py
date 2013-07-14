@@ -29,3 +29,5 @@ class Activity(models.Model):
   game = models.ForeignKey(Game)
   activity = models.CharField(max_length = 500)
   datetime = models.DateTimeField(auto_now_add = True)
+  player1 = models.ForeignKey(Player, related_name="+", null=True, blank=True)
+  player2 = models.ForeignKey(Player, related_name="+", null=True, blank=True)
