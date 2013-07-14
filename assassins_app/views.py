@@ -30,11 +30,18 @@ def activityFeed(request):
   else: 
     fetch_limit = 50
 
+  # fetch relavent activities and respond
   activity = (Activity.objects
       .filter(game=game)
       .extra(order_by=['-datetime'])
       [:fetch_limit])
-  json = serializers.serialize("json", activity)
+  activity_export = [{
+        'activity': o.activity,
+        'datetime': o.datetime.isoformat(),
+        'player1_alias': o.player1.alias,
+        'player2_alias': o.player2.alias,
+      } for o in activity]
+  json = simplejson.dumps(activity_export)
   return http.HttpResponse(json)
 
 
