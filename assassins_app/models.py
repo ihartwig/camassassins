@@ -19,7 +19,7 @@ class Player(models.Model):
   ldap = models.CharField(max_length=200, unique = True)
   is_alive = models.BooleanField(default = True)
   kill_count = models.IntegerField(default = 0)
-  code = models.IntegerField(default = 0)
+  code = models.CharField(max_length=20, default='')
   incorrect_codes = models.IntegerField(default = 0)
 
   def __unicode__(self):

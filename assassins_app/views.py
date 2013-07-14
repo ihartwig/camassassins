@@ -145,13 +145,14 @@ def _handleJoin(msg_parsed, user, game):
   # Add a player to the game.
   try:
     code = random.randint(100, 999)
+    code_str = str(code)
     player = game.player_set.create(
       phone_number = user,
       alias = alias,
       ldap = ldap,
-      code = code)
-    output = 'You are registered as alias ' + player.alias + ' with ldap ' +\
-        player.ldap + ' for ' + game.name + '. Your secret code is ' + code +'.'
+      code = code_str)
+    output = 'You are registered as alias ' + player.alias +\
+        '. Your secret code is ' + code_str +'.'
     return _sendResponse(output)
   except IntegrityError:
     try:
