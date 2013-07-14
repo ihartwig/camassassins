@@ -1,4 +1,4 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from assassins_app.models import Game, Player, Activity
@@ -82,16 +82,25 @@ def send_initial_targets(model_admin, request, queryset):
   num_players = 0
   for game in queryset:
     players = Player.objects.filter(game = game)
-    num_players += len(players)
-    for player in players:
+
+    targets = [player.target for player in players]
+    if None in targets:
+      model_admin.message_user(
+        request,
+        'Players without targets in game ' + game.name + '.',
+        level=messages.ERROR)
+    else:
+      num_players += len(players)
+      for player in players:
         if player.target is None:
-            _sendNewMessage('Couldn\'t find your initial target. Contact game admin.',
-                            player.phone_number,
-                            game.token)
+          _sendNewMessage(('Couldn\'t find your initial target.'
+                            ' Contact game admin.'),
+                          player.phone_number,
+                          game.token)
         else:
-            _sendNewMessage('Your initial target is who/' + target.ldap,
-                            player.phone_number,
-                            game.token)
+          _sendNewMessage('Your initial target is who/' + player.target.ldap,
+                          player.phone_number,
+                          game.token)
 
   model_admin.message_user(
       request,
