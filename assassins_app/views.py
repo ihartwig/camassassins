@@ -4,24 +4,27 @@ from django.core import serializers
 from django.db import DatabaseError, IntegrityError
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import simplejson
+from django.core import serializers
 import re
 import requests
 from tropo import Tropo, Session, Say
 
 
 def activityFeed(request):
-  if ('gamenumber' not in request):
-    return http.HttpResponseNotFound
+  if ('gamenumber' not in request.GET):
+    print('no game number')
+    return http.HttpResponseNotFound()
   else:
     game_number = request.GET['gamenumber']
 
   # get the game associated with this request
   try:
-    game = Game.objects.get(number = game_number)
+    game = Game.objects.get(number=game_number)
   except Game.DoesNotExist:
+    print('couldn\'t find game with that number')
     return http.HttpResponseNotFound()
 
-  if ('fetchlimit' not in request):
+  if ('fetchlimit' in request.GET):
     # this is an initialization request; return fetchlimit most recent entries
     fetch_limit = request.GET['fetchlimit']
   else: 
@@ -31,8 +34,7 @@ def activityFeed(request):
       .filter(game=game)
       .extra(order_by=['-datetime'])
       [:fetch_limit])
-  json = simplejson.dumps([{'activity': o.activity,
-                            'datetime': o.datetime} for o in activity])
+  json = serializers.serialize("json", activity)
   return http.HttpResponse(json)
 
 
