@@ -1,0 +1,30 @@
+{% extends "skeleton.html" %}
+{% block head %}
+<title>Scoreboard</title>
+<script type="text/javascript">
+GAME_NUMBER = 555;
+function SBCtrl($scope, $http) {
+    var getData = function() {
+        $http({method:'GET', url:'/api/activity/feed?gamenumber='+GAME_NUMBER}).success(function(data) {
+        $scope.activities = data;
+        });
+    };
+    getData();
+    setInterval(getData, 10*1000);
+}
+
+</script>
+{% endblock %}
+{% block content %}
+<div ng-controller="SBCtrl">
+    <table class="table">
+        {% verbatim %}
+        <tr ng-repeat="activity in activities">
+        <td>{{activity.player1_alias}}</td> 
+        <td>{{activity.activity}}</td> 
+        <td>{{activity.player2_alias}}</td> 
+        {% endverbatim %}
+        </tr>
+    </table>
+</div>
+{% endblock %}
