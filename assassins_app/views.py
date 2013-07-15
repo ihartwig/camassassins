@@ -42,8 +42,8 @@ def activityFeed(request):
   activity_export = [{
         'activity': o.activity,
         'datetime': o.datetime.isoformat(),
-        'player1_alias': o.player1.alias,
-        'player2_alias': o.player2.alias,
+        'player1_alias': (o.player1.alias if o.player1 else ''),
+        'player2_alias': (o.player2.alias if o.player2 else ''),
       } for o in activity]
   json = simplejson.dumps(activity_export)
   return http.HttpResponse(json)
@@ -227,7 +227,7 @@ def _killPlayer(killer, target, game):
       killer.save()
       # record in activity list
       Activity.objects.create(game=game,
-                              activity='win',
+                              activity='wins',
                               player1=killer)
       return _sendResponse('Congrats. You win!')
     else:
@@ -302,7 +302,7 @@ def _forceQuitPlayer(quit_msg, player, game):
 
     # record in activity list
     Activity.objects.create(game=game,
-                            activity='win',
+                            activity='wins',
                             player1=hunter)
 
   else:

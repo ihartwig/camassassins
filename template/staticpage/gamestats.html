@@ -1,0 +1,82 @@
+{% extends "skeleton.html" %}
+{% block head %}
+<title>Scoreboard</title>
+<script type="text/javascript">
+
+</script>
+<script type="text/javascript">
+var GAME_NUMBER = "16178703381";
+
+function SBCtrl($scope, $http) {
+  var getData = function() {
+    $http({method:'GET', url:'/api/scoreboard'}).success(function(data) {
+      $scope.players = data;
+
+      // Add some style stuff
+      // $.each($scope.players, function(index, value) {
+      //   if ($scope.players[index]['is_alive'] == false) {
+      //     $scope.players[index]['dead'] = 'error';
+      //   }
+      // });
+    });
+  };
+  getData();
+  setInterval(getData, 10*1000);
+}
+
+function AFCtrl($scope, $http) {
+  $scope.activities = {};
+  var getData = function() {
+    $http({method: 'GET', url: '/api/activity/feed?gamenumber=' + GAME_NUMBER}).success(function(data) {
+      $scope.activities = data;
+    });
+  };
+  getData();
+  setInterval(getData, 10*1000);
+}
+</script>
+{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="span6" ng-controller="SBCtrl">
+    <h2>Scoreboard</h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Alias</th>
+          <th>Kill Count</th>
+          <th>Alive?</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% verbatim %}
+        <tr ng-repeat="player in players" ng-class="{error: !player.is_alive}">
+          <td>{{player.alias}}</td>
+          <td>{{player.kill_count}}</td>
+          <td>{{player.is_alive}}</td>
+        </tr>
+        {% endverbatim %}
+      </tbody>
+    </table>
+  </div>
+  <div class="span6" ng-controller="AFCtrl">
+    <h2>Activity Feed</h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Activity</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% verbatim %}
+        <tr ng-repeat="activity in activities">
+          <td>{{activity.datetime | date:'MM/dd/yyyy @ HH:mm'}}</td>
+          <td><i>{{activity.player1_alias}}</i> {{activity.activity}} <i>{{activity.player2_alias}}</i></td>
+        </tr>
+        {% endverbatim %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
