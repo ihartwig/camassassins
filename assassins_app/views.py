@@ -16,8 +16,7 @@ INCORRECT_CODE_LIMIT = 5
 
 def activityFeed(request):
   if ('gamenumber' not in request.GET):
-    print('no game number')
-    return http.HttpResponseNotFound()
+    return http.HttpResponseNotFound('missing game number')
   else:
     game_number = request.GET['gamenumber']
 
@@ -25,8 +24,7 @@ def activityFeed(request):
   try:
     game = Game.objects.get(number=game_number)
   except Game.DoesNotExist:
-    print('couldn\'t find game with that number')
-    return http.HttpResponseNotFound()
+    return http.HttpResponseNotFound('couldn\'t find a game with that number')
 
   if ('fetchlimit' in request.GET):
     # this is an initialization request; return fetchlimit most recent entries
@@ -50,7 +48,18 @@ def activityFeed(request):
 
 
 def scoreboard(request):
-  players = Player.objects.extra(order_by = ['-kill_count'])
+  if ('gamenumber' not in request.GET):
+    return http.HttpResponseNotFound('missing game number')
+  else:
+    game_number = request.GET['gamenumber']
+
+  # get the game associated with this request
+  try:
+    game = Game.objects.get(number=game_number)
+  except Game.DoesNotExist:
+    return http.HttpResponseNotFound('couldn\'t find a game with that number')
+
+  players = Player.objects.filter(game=game).extra(order_by = ['-kill_count'])
   json = simplejson.dumps([{'alias': o.alias,
                             'kill_count': o.kill_count,
                             'is_alive': o.is_alive} for o in players])

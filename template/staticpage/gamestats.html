@@ -9,7 +9,11 @@ var GAME_NUMBER = "16178703381";
 
 function SBCtrl($scope, $http) {
   var getData = function() {
-    $http({method:'GET', url:'/api/scoreboard'}).success(function(data) {
+    $http({
+          method: 'GET',
+          url: '/api/scoreboard',
+          params: {'gamenumber': GAME_NUMBER}
+        }).success(function(data) {
       $scope.players = data;
 
       // Add some style stuff
@@ -27,7 +31,11 @@ function SBCtrl($scope, $http) {
 function AFCtrl($scope, $http) {
   $scope.activities = {};
   var getData = function() {
-    $http({method: 'GET', url: '/api/activity/feed?gamenumber=' + GAME_NUMBER}).success(function(data) {
+    $http({
+          method: 'GET',
+          url: '/api/activity/feed',
+          params: {'gamenumber': GAME_NUMBER}
+        }).success(function(data) {
       $scope.activities = data;
     });
   };
