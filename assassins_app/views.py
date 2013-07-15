@@ -124,7 +124,7 @@ def handleSms(request):
   # elif(msg_parsed[0] == "dead"):
   #   return _handleDead(msg_parsed, user)
   elif msg_parsed[0] == "secret":
-    return _sendResponse(player.code)
+    return _handleSecret(msg_parsed, player, game)
   elif(msg_parsed[0] == "target"):
     return _handleTarget(msg_parsed, player, game)
   elif(msg_parsed[0] == "quit"):
@@ -252,6 +252,13 @@ def _wrongCode(player):
       return _sendError(
         'could not verify kill. you have %d/%d attempts left' %
         (INCORRECT_CODE_LIMIT-player.incorrect_codes, INCORRECT_CODE_LIMIT))
+
+
+def _handleSecret(msg_parsed, player, game):
+  """expect msg: secret"""
+  if(len(msg_parsed) != 1):
+    return _sendError('incorrect number of arguments.')
+  return _sendResponse(player.code)
 
 
 def _handleTarget(msg_parsed, player, game):
