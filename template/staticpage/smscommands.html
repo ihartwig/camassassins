@@ -1,0 +1,69 @@
+{% extends "skeleton.html" %}
+{% block content %}
+<h1>Interacting with the SMS gateway</h1>
+<p>All of this game's administration will happen over SMS (barring a cataclysmic system malfunction).</p>
+<p>The SMS gateway for this game is: <b>+16178703381</b>.</p>
+<h3>Commands</h3>
+<table class="sms-table table">
+  <thead>
+    <tr>
+      <th>Command</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="sms-command-col">
+        <p class="sms-command">join <span class="sms-placeholder">&lt;ldap&gt;</span> <span class="sms-placeholder">&lt;alias&gt;</span></p>
+      </td>
+      <td>
+        <p>Used to join the game.</p>
+        <ul>
+          <li><span class="sms-placeholder">ldap</span>: your @google.com ldap; given to your assassin to track you.</li>
+          <li><span class="sms-placeholder">alias</span>: a secret alias for use on the scoreboard and activity feed.</li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td class="sms-command-col">
+        <p class="sms-command">kill <span class="sms-placeholder">&lt;secret&gt;</span></p>
+      </td>
+      <td>
+        <p>Used to record a kill of your target.</p>
+        <ul>
+          <li><span class="sms-placeholder">secret</span>: your target's secret code that they will relinquish upon death.</li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td class="sms-command-col">
+        <p class="sms-command">secret</p>
+      </td>
+      <td>
+        <p>Used to retrieve a forgotten secret code.</p>
+      </td>
+    </tr>
+    <tr>
+      <td class="sms-command-col">
+        <p class="sms-command">target</p>
+      </td>
+      <td>
+        <p>Used to retrieve a forgotten target.</p>
+      </td>
+    </tr>
+    <tr>
+      <td class="sms-command-col">
+        <p class="sms-command">quit <span class="sms-placeholder">&lt;secret&gt;</span></p>
+      </td>
+      <td>
+        <p>Used to quit the game. <b>Warning: this command does not require confirmation and is difficult to reverse. Only send it if you really intend to leave the game.</b></p>
+        <ul>
+          <li><span class="sms-placeholder">secret</span>: your secret code.</li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<h3>Note on secret codes</h3>
+<p>The secret code was designed as a stateless way to ensure both parties agree that a kill has occured. To prevent brute-forcing by the killer, the killer can only enter an incorrect code 4 times per kill. On the 5<sup>th</sup> incorrect code, the killer will forfeit his/her position in the game.</p>
+{% endblock content %}

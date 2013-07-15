@@ -36,6 +36,7 @@ hr {
   border-top: 1px solid #ddd;
 }
 
+
 /* Header styles
 ----------------------------------------------------------------------------- */
 
@@ -52,4 +53,20 @@ hr {
   height: 40px;
   top: 20px;
   left: 10px;
+}
+
+
+/* Header styles
+----------------------------------------------------------------------------- */
+
+.sms-command-col {
+  width: 200px;
+}
+
+.sms-command {
+  font-weight: bold;
+}
+
+.sms-placeholder {
+  font-style: italic;
 }
