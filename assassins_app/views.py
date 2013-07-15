@@ -10,7 +10,7 @@ import requests
 from tropo import Tropo, Session, Say
 import random
 
-ADMIN_LDAP = 'vionalam'
+ADMIN_LDAP = 'viona'
 ADMIN_MESSAGE = 'Please contact the game admin at who/'+ADMIN_LDAP
 INCORRECT_CODE_LIMIT = 5
 
