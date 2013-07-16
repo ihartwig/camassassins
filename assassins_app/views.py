@@ -13,6 +13,38 @@ import random
 ADMIN_LDAP = 'viona'
 ADMIN_MESSAGE = 'Please contact the game admin at who/'+ADMIN_LDAP
 INCORRECT_CODE_LIMIT = 5
+IP_WHITELIST = [
+  '66.193.54.20',
+  '66.193.54.21',
+  '66.193.54.22',
+  '66.193.54.23',
+  '66.193.54.24',
+  '66.193.54.25',
+  '66.193.54.26',
+  '66.193.54.27',
+  '66.193.54.28',
+  '66.193.54.29',
+  '146.82.49.20',
+  '146.82.49.21',
+  '146.82.49.22',
+  '146.82.49.23',
+  '146.82.49.24',
+  '146.82.49.25',
+  '146.82.49.26',
+  '146.82.49.27',
+  '146.82.49.28',
+  '146.82.49.29',
+  '64.79.136.20',
+  '64.79.136.21',
+  '64.79.136.22',
+  '64.79.136.23',
+  '64.79.136.24',
+  '64.79.136.25',
+  '64.79.136.26',
+  '64.79.136.27',
+  '64.79.136.28',
+  '64.79.136.29',
+]
 
 def activityFeed(request):
   if ('gamenumber' not in request.GET):
@@ -73,6 +105,11 @@ def handleSms(request):
   # filter out non-post
   if(request.method != 'POST'):
     return http.HttpResponseNotAllowed('')
+
+  # filter by ip whitelist
+  ip = request.META['REMOTE_ADDR']
+  if ip not in IP_WHITELIST:
+    return http.HttpResponseBadRequest('I don\'t trust you.')
 
   print(request.body)
   s = Session(request.body)
