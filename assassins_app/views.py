@@ -388,7 +388,7 @@ def _sendNewMessage(msg, to, token):
     'outboundnum': to,
   }
   url = 'https://api.tropo.com/1.0/sessions'
-  r = requests.get(url, params = payload)
+  r = requests.get(url, params = payload, verify=True)
   if(r.status_code == 200):
     return True
   else:
