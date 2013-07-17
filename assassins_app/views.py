@@ -311,7 +311,14 @@ def _handleTarget(msg_parsed, player, game):
   """expect msg: target"""
   if(len(msg_parsed) != 1):
     return _sendError('incorrect number of arguments.')
-  return _sendResponse('Your target is who/' + player.target.ldap)
+
+  if(not game.game_started):
+    return _sendError('The game hasn\'t started yet.')
+
+  if(player.target):
+    return _sendResponse('Your target is who/' + player.target.ldap)
+  else:
+    return _sendError('You don\'t have a target yet.')
 
 
 def _handleQuit(msg_parsed, player, game):
