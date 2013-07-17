@@ -1,3 +1,4 @@
 *.pyc
 *.sqldb
 migrations/
+nginx.conf
