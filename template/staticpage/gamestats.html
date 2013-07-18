@@ -11,6 +11,12 @@ function SBCtrl($scope, $http) {
           url: '/api/scoreboard',
           params: {'gamenumber': GAME_NUMBER}
         }).success(function(data) {
+      $.each(data, function(i){
+        if(data[i].alias === 'BigBrotherIsWatching') {
+                someArray.splice(i,1);
+            return false;
+        }
+      });
       $scope.players = data;
 
       // Add some style stuff
