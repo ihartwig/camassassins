@@ -91,7 +91,7 @@ def scoreboard(request):
   except Game.DoesNotExist:
     return http.HttpResponseNotFound('couldn\'t find a game with that number')
 
-  players = Player.objects.filter(game=game).extra(order_by = ['-kill_count'])
+  players = Player.objects.filter(game=game).extra(order_by = ['-is_alive', '-kill_count'])
   json = simplejson.dumps([{'alias': o.alias,
                             'kill_count': o.kill_count,
                             'is_alive': o.is_alive} for o in players])
