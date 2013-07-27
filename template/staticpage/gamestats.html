@@ -57,7 +57,6 @@ function AFCtrl($scope, $http) {
         {% verbatim %}
         <tr ng-repeat="player in players" ng-class="{error: !player.is_alive}">
           <td>{{player.alias}}</td>
-          <td>{{player.kill_count}}</td>
           <td>{{player.is_alive}}</td>
         </tr>
         {% endverbatim %}
@@ -77,7 +76,7 @@ function AFCtrl($scope, $http) {
         {% verbatim %}
         <tr ng-repeat="activity in activities">
           <td>{{activity.datetime | date:'MM/dd/yyyy @ HH:mm'}}</td>
-          <td><i>{{activity.player1_alias}}</i> {{activity.activity}} <i>{{activity.player2_alias}}</i></td>
+          <td><i>{{activity.player2_alias}}</i>{{activity.activity}}</td>
         </tr>
         {% endverbatim %}
       </tbody>
