@@ -76,7 +76,7 @@ function AFCtrl($scope, $http) {
         {% verbatim %}
         <tr ng-repeat="activity in activities">
           <td>{{activity.datetime | date:'MM/dd/yyyy @ HH:mm'}}</td>
-          <td><i>{{activity.player2_alias}}</i>{{activity.activity}}</td>
+          <td><i>{{activity.player2_alias}}</i> was {{activity.activity}}</td>
         </tr>
         {% endverbatim %}
       </tbody>
